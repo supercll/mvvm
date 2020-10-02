@@ -9,23 +9,32 @@
         <div id="app"></div>
         <script>
             let state = { age: 18 };
-
+            let active;
             function defineReactive(obj) {
                 for (let key in obj) {
                     let value = obj[key];
+                    const dep = [];
                     Object.defineProperty(obj, key, {
                         get() {
+                            if (active) {
+                                dep.push(active);
+                            }
                             return value;
                         },
                         set(newVal) {
                             value = newVal;
+                            dep.forEach(watcher => watcher());
                         },
                     });
                 }
             }
 
+            defineReactive(state);
+
             const watch = fn => {
+                active = fn;
                 fn();
+                active = null;
             };
             watch(() => {
                 app.innerHTML = state.age;
