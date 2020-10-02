@@ -9,6 +9,21 @@
         <div id="app"></div>
         <script>
             let state = { age: 18 };
+
+            function defineReactive(obj) {
+                for (let key in obj) {
+                    let value = obj[key];
+                    Object.defineProperty(obj, key, {
+                        get() {
+                            return value;
+                        },
+                        set(newVal) {
+                            value = newVal;
+                        },
+                    });
+                }
+            }
+
             const watch = fn => {
                 fn();
             };
