@@ -14,15 +14,45 @@
             obj: {
                 age: 20,
             },
+            arr: [1, 2, 3, 4],
         };
         let active;
+
+        const watcher = fn => {
+            active = fn;
+            fn();
+            active = null;
+        };
+
+        const render = () => {
+            app.innerHTML = `${state.name} + ${state.obj.age} + ${state.arr}`;
+        };
+        const fn2 = () => {
+            console.log(state.name, state.obj.age, state.arr);
+        };
+
+        function defineReactiveArray(target) {
+            let originalArrayPrototype = Array.prototype;
+            let arrMethods = Object.create(originalArrayPrototype);
+
+            // 重写数组方法
+            arrMethods.push = function (...args) {
+                originalArrayPrototype.push.call(this, ...args);
+                render();
+            };
+            target.__proto__ = arrMethods;
+        }
 
         function defineReactive(target) {
             for (let key in target) {
                 let value = target[key];
+                if (value instanceof Array) {
+                    defineReactiveArray(value);
+                    continue;
+                }
                 if (value instanceof Object) {
                     defineReactive(value);
-                    break;
+                    continue;
                 }
                 let deps = [];
                 Object.defineProperty(target, key, {
@@ -44,20 +74,7 @@
 
         defineReactive(state);
 
-        const watcher = fn => {
-            active = fn;
-            fn();
-            active = null;
-        };
-
-        const fn1 = () => {
-            app.innerHTML = `${state.name} + ${state.obj.age}`;
-        };
-        const fn2 = () => {
-            console.log(state.name, state.obj.age);
-        };
-
-        watcher(fn1);
+        watcher(render);
         watcher(fn2);
     </script>
 </html>
