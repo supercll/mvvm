@@ -7,41 +7,57 @@
     </head>
     <body>
         <div id="app"></div>
-        <script>
-            let state = { age: 18 };
-            let active;
-            function defineReactive(obj) {
-                for (let key in obj) {
-                    let value = obj[key];
-                    const dep = [];
-                    Object.defineProperty(obj, key, {
-                        get() {
-                            if (active) {
-                                dep.push(active);
-                            }
-                            return value;
-                        },
-                        set(newVal) {
-                            value = newVal;
-                            dep.forEach(watcher => watcher());
-                        },
-                    });
-                }
-            }
-
-            defineReactive(state);
-
-            const watch = fn => {
-                active = fn;
-                fn();
-                active = null;
-            };
-            watch(() => {
-                app.innerHTML = state.age;
-            });
-            watch(() => {
-                console.log(state.age);
-            });
-        </script>
     </body>
+    <script>
+        let state = {
+            name: "lc",
+            obj: {
+                age: 20,
+            },
+        };
+        let active;
+
+        function defineReactive(target) {
+            for (let key in target) {
+                let value = target[key];
+                if (value instanceof Object) {
+                    defineReactive(value);
+                    break;
+                }
+                let deps = [];
+                Object.defineProperty(target, key, {
+                    get() {
+                        if (active) {
+                            deps.push(active);
+                        }
+                        return value;
+                    },
+                    set(newVal) {
+                        value = newVal;
+                        deps.forEach(fn => {
+                            fn();
+                        });
+                    },
+                });
+            }
+        }
+
+        defineReactive(state);
+
+        const watcher = fn => {
+            active = fn;
+            fn();
+            active = null;
+        };
+
+        const fn1 = () => {
+            app.innerHTML = `${state.name} + ${state.obj.age}`;
+        };
+        const fn2 = () => {
+            console.log(state.name, state.obj.age);
+        };
+
+        watcher(fn1);
+        watcher(fn2);
+    </script>
 </html>
